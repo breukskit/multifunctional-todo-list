@@ -1,36 +1,36 @@
 "use strict";
 // Get elements from the DOM
-const form = document.querySelector('.form');
-const input = document.querySelector('.input');
-const list = document.querySelector('.list');
-const removeSelected = document.querySelector('#remove-selected');
-const markAllComplete = document.querySelector('#mark-all-complete');
+const form = document.querySelector(".form");
+const input = document.querySelector(".input");
+const list = document.querySelector(".list");
+const removeSelected = document.querySelector("#remove-selected");
+const markAllComplete = document.querySelector("#mark-all-complete");
 // DOM render-function
 function addToDom(todo) {
-    const li = document.createElement('li');
+    const li = document.createElement("li");
     li.id = String(todo.id);
-    li.className = 'todo-item';
-    const textSpan = document.createElement('span');
+    li.className = "todo-item";
+    const textSpan = document.createElement("span");
     textSpan.innerText = todo.todo;
-    textSpan.className = todo.completed ? 'todo-title-completed' : 'todo-title';
-    textSpan.addEventListener('click', (e) => {
+    textSpan.className = todo.completed ? "todo-title-completed" : "todo-title";
+    textSpan.addEventListener("click", (e) => {
         const target = e.target;
         const id = Number(target.parentElement.id);
         todos.markCompleted(id);
     });
-    const span = document.createElement('span');
-    span.innerHTML = '&times;';
-    span.className = 'delete-btn';
-    span.addEventListener('click', (e) => {
+    const span = document.createElement("span");
+    span.innerHTML = "&times;";
+    span.className = "delete-btn";
+    span.addEventListener("click", (e) => {
         const target = e.target;
         const id = Number(target.parentElement.id);
         todos.deleteTodo(id);
     });
     if (todo.completed) {
-        const preSpan = document.createElement('span');
-        preSpan.innerHTML = '&check;';
-        preSpan.className = 'checkmark';
-        preSpan.addEventListener('click', (e) => {
+        const preSpan = document.createElement("span");
+        preSpan.innerHTML = "&check;";
+        preSpan.className = "checkmark";
+        preSpan.addEventListener("click", (e) => {
             const target = e.target;
             const id = Number(target.parentElement.id);
             todos.markCompleted(id);
@@ -48,24 +48,28 @@ function addToDom(todo) {
 // Make the Remove completed button disabled if there are no completed todos
 function handleRemoveBtn() {
     let completedTodos = false;
-    todos.todos.forEach((todo) => {
-        if (todo.completed) {
-            completedTodos = true;
+    if (todos.todos) {
+        todos.todos.forEach((todo) => {
+            if (todo.completed) {
+                completedTodos = true;
+            }
+        });
+        if (completedTodos) {
+            removeSelected.disabled = false;
         }
-    });
-    if (completedTodos) {
-        removeSelected.disabled = false;
-    }
-    else {
-        removeSelected.disabled = true;
+        else {
+            removeSelected.disabled = true;
+        }
     }
 }
 function handleMarkAllBtn() {
-    if (todos.todos.length < 1) {
-        markAllComplete.disabled = true;
-    }
-    else {
-        markAllComplete.disabled = false;
+    if (todos.todos) {
+        if (todos.todos.length < 1) {
+            markAllComplete.disabled = true;
+        }
+        else {
+            markAllComplete.disabled = false;
+        }
     }
 }
 // A list of the todos and methods that get from and set local storage
@@ -77,16 +81,23 @@ class TodosList {
         return this._todos;
     }
     getFromStorage() {
-        this._todos = JSON.parse(localStorage.getItem('todos'));
+        this._todos = JSON.parse(localStorage.getItem("todos"));
     }
     setStorage() {
-        localStorage.setItem('todos', JSON.stringify(this._todos));
+        localStorage.setItem("todos", JSON.stringify(this._todos));
     }
     addTodo(todo) {
         this.getFromStorage();
-        this._todos = [...this._todos, { ...todo }];
-        this.setStorage();
-        this.renderTodos();
+        if (this._todos) {
+            this._todos = [...this._todos, { ...todo }];
+            this.setStorage();
+            this.renderTodos();
+        }
+        else {
+            this._todos = [{ ...todo }];
+            this.setStorage();
+            this.renderTodos();
+        }
     }
     markCompleted(id) {
         this._todos.forEach((todo) => {
@@ -115,8 +126,10 @@ class TodosList {
         this.renderTodos();
     }
     renderTodos() {
-        list.innerHTML = '';
-        this._todos.forEach((todo) => addToDom(todo));
+        list.innerHTML = "";
+        if (this._todos) {
+            this._todos.forEach((todo) => addToDom(todo));
+        }
     }
 }
 const todos = new TodosList();
@@ -132,24 +145,24 @@ class Todo {
 const handleSubmit = (e) => {
     e.preventDefault();
     const inputValue = input.value;
-    if (inputValue !== '') {
+    if (inputValue !== "") {
         const id = new Date().getTime();
         const todo = new Todo(inputValue, id, false);
-        input.value = '';
+        input.value = "";
         todos.addTodo(todo);
         handleMarkAllBtn();
     }
 };
 // Event listeners
-form.addEventListener('submit', handleSubmit);
-list.addEventListener('click', handleRemoveBtn);
-list.addEventListener('click', handleMarkAllBtn);
-removeSelected.addEventListener('click', () => {
+form.addEventListener("submit", handleSubmit);
+list.addEventListener("click", handleRemoveBtn);
+list.addEventListener("click", handleMarkAllBtn);
+removeSelected.addEventListener("click", () => {
     todos.removeSelected();
     handleRemoveBtn();
     handleMarkAllBtn();
 });
-markAllComplete.addEventListener('click', () => {
+markAllComplete.addEventListener("click", () => {
     todos.markAllCompleted();
     handleRemoveBtn();
 });
